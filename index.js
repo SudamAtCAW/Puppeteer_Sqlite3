@@ -53,7 +53,7 @@ const categories = await page.$$('div .side_categories .nav ul li a');
 
 
 for (const category of categories) {
-    const categoryName = await page.evaluate(el => el.innerText, category);
+    const categoryName = await category.evaluate(el => el.innerText);
     db.run(insertIntoCategories,[categoryName],(err) =>{
             if(err) return console.error(err.message);
         })
@@ -65,7 +65,7 @@ for (const category of categories) {
 
     
 
-    while( await page.$('.pager .next a')){
+    while( await  page.$('.pager .next a') ){
      
 const booksData = await page.evaluate(() => 
 

@@ -97,7 +97,6 @@ getAllcategories(".nav ul li a", "https://books.toscrape.com/").then(
       });
     }
 
-
     getAllBooks(categoryUrls).then((booksData) => {
       addCategoryInsideBook(booksData).then((allBooks) => {
         const converToprice = (price) => {

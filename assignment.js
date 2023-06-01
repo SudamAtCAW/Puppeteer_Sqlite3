@@ -83,6 +83,40 @@ async function addCategoryInsideBook(booksData) {
   return allBooks;
 }
 
+async function updateBookData(allBooks) {
+  const converToprice = (price) => {
+    return parseFloat(price.replace("£", ""));
+  };
+
+  const convertRating = (rating) => {
+    switch (rating) {
+      case "One":
+        return 1;
+      case "Two":
+        return 2;
+      case "Three":
+        return 3;
+      case "Four":
+        return 4;
+      case "Five":
+        return 5;
+      default:
+        return 0;
+    }
+  };
+  const url = "https://books.toscrape.com/";
+
+  const upadtedBooksData = Array.from(allBooks, (book) => ({
+    bookName: book.bookName,
+    category: book.category,
+    price: converToprice(book.price),
+    imageSrc: url + book.imageSrc,
+    rating: convertRating(book.rating),
+  }));
+
+  return upadtedBooksData;
+}
+
 getAllcategories(".nav ul li a", "https://books.toscrape.com/").then(
   (categories) => {
     const categoryUrls = [];
@@ -99,51 +133,23 @@ getAllcategories(".nav ul li a", "https://books.toscrape.com/").then(
 
     getAllBooks(categoryUrls).then((booksData) => {
       addCategoryInsideBook(booksData).then((allBooks) => {
-        const converToprice = (price) => {
-          return parseFloat(price.replace("£", ""));
-        };
-
-        const convertRating = (rating) => {
-          switch (rating) {
-            case "One":
-              return 1;
-            case "Two":
-              return 2;
-            case "Three":
-              return 3;
-            case "Four":
-              return 4;
-            case "Five":
-              return 5;
-            default:
-              return 0;
+        updateBookData(allBooks).then((upadtedBooksData) => {
+          for (const book of upadtedBooksData) {
+            db.run(
+              insertIntoBooks,
+              [
+                book.bookName,
+                book.category,
+                book.imageSrc,
+                book.price,
+                book.rating,
+              ],
+              (err) => {
+                if (err) return console.error(err.message);
+              }
+            );
           }
-        };
-        const url = "https://books.toscrape.com/";
-
-        const upadtedBooksData = Array.from(allBooks, (book) => ({
-          bookName: book.bookName,
-          category: book.category,
-          price: converToprice(book.price),
-          imageSrc: url + book.imageSrc,
-          rating: convertRating(book.rating),
-        }));
-
-        for (const book of upadtedBooksData) {
-          db.run(
-            insertIntoBooks,
-            [
-              book.bookName,
-              book.category,
-              book.imageSrc,
-              book.price,
-              book.rating,
-            ],
-            (err) => {
-              if (err) return console.error(err.message);
-            }
-          );
-        }
+        });
       });
     });
   }

@@ -20,12 +20,12 @@ db.all(getAllCategories, [], (err, rows) => {
   });
 });
 
-// db.all(booksForCategory,['Sequential Art'],(err,rows) =>{
-//     if(err) return console.error(err.message);
-//     rows.forEach(row =>{
-//         console.log(row)
-//     })
-// })
+db.all(booksForCategory,['Sequential Art'],(err,rows) =>{
+    if(err) return console.error(err.message);
+    rows.forEach(row =>{
+        console.log(row)
+    })
+})
 
 // db.run('DROP TABLE categories')
 // db.run('DROP TABLE books')

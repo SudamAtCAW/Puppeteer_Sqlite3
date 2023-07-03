@@ -1,5 +1,3 @@
-const myMethod = require("./update")
+const main = require("./update")
 
-const dbName = new Date;
-
-myMethod()
+main()

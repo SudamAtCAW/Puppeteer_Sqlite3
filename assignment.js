@@ -73,7 +73,9 @@ async function addCategoryInsideBook(booksData) {
     const category = books.categoryName;
     for (const book of books.allBooks) {
       book["category"] = category;
+      console.log(book)
     }
+
   }
   for (const books of booksData) {
     for (const book of books.allBooks) {
@@ -125,11 +127,11 @@ getAllcategories(".nav ul li a", "https://books.toscrape.com/").then(
       categoryUrls.push(category.categoryLink);
       categoryNames.push(category.categoryName);
     }
-    for (const category of categoryNames) {
-      db.run(insertIntoCategories, [category], (err) => {
-        if (err) return console.error(err.message);
-      });
-    }
+    // for (const category of categoryNames) {
+    //   db.run(insertIntoCategories, [category], (err) => {
+    //     if (err) return console.error(err.message);
+    //   });
+    // }
 
     getAllBooks(categoryUrls).then((booksData) => {
       addCategoryInsideBook(booksData).then((allBooks) => {

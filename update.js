@@ -7,16 +7,12 @@ const getAllcategories = async (url, locator) => {
   const page = await browser.newPage();
   await page.goto(url);
   const categoryLinks = await page.$$eval(locator, (elements) =>
-    elements.map((e) => (
-     e.href
-    ))
+    elements.map((e) => e.href)
   );
   const categoryNames = await page.$$eval(locator, (elements) =>
-  elements.map((e) => (
-   e.innerText
-  ))
-);
-  const result = [browser, categoryNames, categoryLinks]
+    elements.map((e) => e.innerText)
+  );
+  const result = [browser, categoryNames, categoryLinks];
   return result;
 };
 
@@ -67,7 +63,7 @@ const getAllBooks = async (result) => {
     await page.close();
   }
   await browser.close();
-  return booksData
+  return booksData;
 };
 
 const createDbName = (number) => {
@@ -89,24 +85,23 @@ const insertCategories = (db, categories) => {
   }
 };
 
-const insertCategoryIdInsdieBook = async (db, booksData) =>{
+const insertCategoryIdInsdieBook = async (db, booksData) => {
   const getCategoryIdQuery = `SELECT category_id FROM categories WHERE category_name = ?`;
-  for (const books of booksData){
+  for (const books of booksData) {
     const category = books.categoryName;
-    db.get(getCategoryIdQuery, [category],  async (err, row) => {
+    db.get(getCategoryIdQuery, [category], async (err, row) => {
       if (err) return console.error(err.message);
-       const categoryId = row.category_id;
-       for (const book of books.allBooks){
+      const categoryId = row.category_id;
+      for (const book of books.allBooks) {
         book["category_Id"] = categoryId;
-        const updatedBook = await updateBookData(book)
-        insertIntoBooks(db, updatedBook)
-       }
-
+        const updatedBook = await updateBookData(book);
+        insertIntoBooks(db, updatedBook);
+      }
     });
   }
-}
+};
 
-const updateBookData = async (book) =>{
+const updateBookData = async (book) => {
   const converToprice = (price) => {
     return parseFloat(price.replace("£", ""));
   };
@@ -130,51 +125,51 @@ const updateBookData = async (book) =>{
   const url = "https://books.toscrape.com/";
 
   const updatedBook = {
-    Name : book.bookName,
-    categoryId : book.category_Id,
-    Price : converToprice(book.price),
-    imageSrc : url + book.imageSrc,
-    rating : convertRating(book.rating)
-  }
+    Name: book.bookName,
+    categoryId: book.category_Id,
+    Price: converToprice(book.price),
+    imageSrc: url + book.imageSrc,
+    rating: convertRating(book.rating),
+  };
   return updatedBook;
-}
+};
 
-const insertIntoBooks = (db, book) =>{
-const query = `INSERT INTO books(book_name, category_id, book_price, book_imageSrc, book_rating) VALUES (?, ?, ?, ?, ?)`
-db.run(
-query,
-  [
-    book.Name,
-    book.categoryId,
-    book.Price,
-    book.imageSrc,
-    book.rating,
-  ],
-  (err) => {
-    if (err) return console.error(err.message);
-  }
-);
-}
-const main = () => {
-  const sqlite3 = require("sqlite3").verbose();
-  const db = new sqlite3.Database(
-    "./test.db",
-    sqlite3.OPEN_READWRITE,
+const insertIntoBooks = (db, book) => {
+  const query = `INSERT INTO books(book_name, category_id, book_price, book_imageSrc, book_rating) VALUES (?, ?, ?, ?, ?)`;
+  db.run(
+    query,
+    [book.Name, book.categoryId, book.Price, book.imageSrc, book.rating],
     (err) => {
       if (err) return console.error(err.message);
+    }
+  );
+};
+const main = (number) => {
+  const dbName = createDbName(number)
+  const sqlite3 = require("sqlite3").verbose();
+  const db = new sqlite3.Database(dbName,
+  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+    (err) => {
+      if (err) return console.error(err.message);
+      else {
+        console.log(`New database "${dbName}" created successfully.`);
+       
+      }
     }
   );
   const createCategoriesTable = `CREATE TABLE if not exists categories(category_id INTEGER PRIMARY KEY, category_name TEXT)`;
   const cretateBooksTable = `CREATE TABLE if not exists books(book_id INTEGER PRIMARY KEY, book_name TEXT, category_id INTEGER, book_price INTEGER, book_imageSrc TEXT, book_rating INTEGER, FOREIGN KEY(category_id) REFERENCES categories (category_id) )`;
   db.run(createCategoriesTable);
   db.run(cretateBooksTable);
-  getAllcategories("https://books.toscrape.com/", ".nav ul li a").then((result) =>{
-    const categoryNames = result[1]
-    //insertCategories(db, categoryNames);
-    getAllBooks(result).then((booksData) =>{
-      insertCategoryIdInsdieBook(db, booksData)
-    })
-  })
+  getAllcategories("https://books.toscrape.com/", ".nav ul li a").then(
+    (result) => {
+      const categoryNames = result[1];
+      insertCategories(db, categoryNames);
+      getAllBooks(result).then((booksData) => {
+        insertCategoryIdInsdieBook(db, booksData);
+      });
+    }
+  );
 };
 
 module.exports = main;

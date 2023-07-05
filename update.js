@@ -73,7 +73,7 @@ const createDbName = (number) => {
   for (var i = 0; i < number; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-  return "MyDB " + result;
+  return `Test ${result}.db`
 };
 
 const insertCategories = (db, categories) => {
@@ -145,15 +145,15 @@ const insertIntoBooks = (db, book) => {
   );
 };
 const main = (number) => {
-  const dbName = createDbName(number)
+  const dbName = createDbName(number);
   const sqlite3 = require("sqlite3").verbose();
-  const db = new sqlite3.Database(dbName,
-  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
+  const db = new sqlite3.Database(
+    dbName,
+    sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
     (err) => {
       if (err) return console.error(err.message);
       else {
         console.log(`New database "${dbName}" created successfully.`);
-       
       }
     }
   );
@@ -169,7 +169,7 @@ const main = (number) => {
         insertCategoryIdInsdieBook(db, booksData);
       });
     }
-  );
+  )
 };
 
 module.exports = main;

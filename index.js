@@ -1,3 +1,3 @@
-const main = require("./update")
+const main = require("./test")
 
 main(3);

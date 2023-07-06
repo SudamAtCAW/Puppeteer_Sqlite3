@@ -73,13 +73,13 @@ const createDbName = (number) => {
   for (var i = 0; i < number; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
-  return `Test ${result}.db`
+  return `Test ${result}.db`;
 };
 
-const insertCategories = (db, categories) => {
+const insertCategories = async (db, categories) => {
   let insertIntoCategories = `INSERT INTO categories(category_name) VALUES (?) `;
   for (const category of categories) {
-    db.run(insertIntoCategories, [category], (err) => {
+    await db.run(insertIntoCategories, [category], (err) => {
       if (err) return console.error(err.message);
     });
   }
@@ -89,7 +89,7 @@ const insertCategoryIdInsdieBook = async (db, booksData) => {
   const getCategoryIdQuery = `SELECT category_id FROM categories WHERE category_name = ?`;
   for (const books of booksData) {
     const category = books.categoryName;
-    db.get(getCategoryIdQuery, [category], async (err, row) => {
+    await db.get(getCategoryIdQuery, [category], async (err, row) => {
       if (err) return console.error(err.message);
       const categoryId = row.category_id;
       for (const book of books.allBooks) {
@@ -134,9 +134,9 @@ const updateBookData = async (book) => {
   return updatedBook;
 };
 
-const insertIntoBooks = (db, book) => {
+const insertIntoBooks = async (db, book) => {
   const query = `INSERT INTO books(book_name, category_id, book_price, book_imageSrc, book_rating) VALUES (?, ?, ?, ?, ?)`;
-  db.run(
+  await db.run(
     query,
     [book.Name, book.categoryId, book.Price, book.imageSrc, book.rating],
     (err) => {
@@ -144,7 +144,7 @@ const insertIntoBooks = (db, book) => {
     }
   );
 };
-const main = (number) => {
+const main = async (number) => {
   const dbName = createDbName(number);
   const sqlite3 = require("sqlite3").verbose();
   const db = new sqlite3.Database(
@@ -161,15 +161,18 @@ const main = (number) => {
   const cretateBooksTable = `CREATE TABLE if not exists books(book_id INTEGER PRIMARY KEY, book_name TEXT, category_id INTEGER, book_price INTEGER, book_imageSrc TEXT, book_rating INTEGER, FOREIGN KEY(category_id) REFERENCES categories (category_id) )`;
   db.run(createCategoriesTable);
   db.run(cretateBooksTable);
-  getAllcategories("https://books.toscrape.com/", ".nav ul li a").then(
-    (result) => {
-      const categoryNames = result[1];
-      insertCategories(db, categoryNames);
-      getAllBooks(result).then((booksData) => {
-        insertCategoryIdInsdieBook(db, booksData);
-      });
+  const result = await getAllcategories(
+    "https://books.toscrape.com/",
+    ".nav ul li a"
+  );
+  if (result) {
+    const categoryNames = result[1];
+    insertCategories(db, categoryNames);
+    const booksData = await getAllBooks(result);
+    if (booksData) {
+      await insertCategoryIdInsdieBook(db, booksData);
     }
-  )
+  }
 };
 
 module.exports = main;

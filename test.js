@@ -86,11 +86,10 @@ const insertCategories = async (db, categories) => {
 };
 
 const insertCategoryIdInsdieBook = async (db, booksData) => {
-
   for (const books of booksData) {
     const category = books.categoryName;
-   const categoryId = await  getCategoryId (db, category)
-   for (const book of books.allBooks) {
+    const categoryId = await getCategoryId(db, category);
+    for (const book of books.allBooks) {
       book["category_Id"] = categoryId;
       const updatedBook = await updateBookData(book);
       insertIntoBooks(db, updatedBook);
@@ -98,18 +97,18 @@ const insertCategoryIdInsdieBook = async (db, booksData) => {
   }
 };
 
-const getCategoryId = async (db, category) =>{
+const getCategoryId = async (db, category) => {
   const getCategoryIdQuery = `SELECT category_id FROM categories WHERE category_name = ?`;
   return new Promise((resolve, reject) => {
-      db.get(getCategoryIdQuery, [category], (err, row) => {
-          if (err) {
-              reject(err);
-          } else {
-              resolve(row.category_id);
-          }
-      });
+    db.get(getCategoryIdQuery, [category], (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row.category_id);
+      }
+    });
   });
-}
+};
 
 const updateBookData = async (book) => {
   const converToprice = (price) => {
